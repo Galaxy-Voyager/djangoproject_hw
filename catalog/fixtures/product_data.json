@@ -1,0 +1,41 @@
+[
+{
+  "model": "catalog.product",
+  "pk": 10,
+  "fields": {
+    "name": "Смартфон Samsung",
+    "description": "Новый флагманский смартфон",
+    "image": "",
+    "category": 7,
+    "price": "54999.99",
+    "created_at": "2025-11-11T13:03:39.173Z",
+    "updated_at": "2025-11-11T13:04:08.760Z"
+  }
+},
+{
+  "model": "catalog.product",
+  "pk": 11,
+  "fields": {
+    "name": "Ноутбук ASUS",
+    "description": "Игровой ноутбук",
+    "image": "",
+    "category": 7,
+    "price": "89999.50",
+    "created_at": "2025-11-11T13:03:39.176Z",
+    "updated_at": "2025-11-11T13:03:39.176Z"
+  }
+},
+{
+  "model": "catalog.product",
+  "pk": 12,
+  "fields": {
+    "name": "Роман 'Мастер и Маргарита'",
+    "description": "Классика русской литературы",
+    "image": "",
+    "category": 8,
+    "price": "1500.00",
+    "created_at": "2025-11-11T13:03:39.176Z",
+    "updated_at": "2025-11-11T13:03:39.176Z"
+  }
+}
+]
