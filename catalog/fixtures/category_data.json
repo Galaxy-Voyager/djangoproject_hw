@@ -1,0 +1,26 @@
+[
+{
+  "model": "catalog.category",
+  "pk": 7,
+  "fields": {
+    "name": "Электроника",
+    "description": "Техника и гаджеты"
+  }
+},
+{
+  "model": "catalog.category",
+  "pk": 8,
+  "fields": {
+    "name": "Книги",
+    "description": "Художественная литература"
+  }
+},
+{
+  "model": "catalog.category",
+  "pk": 9,
+  "fields": {
+    "name": "Одежда",
+    "description": "Модная одежда"
+  }
+}
+]
