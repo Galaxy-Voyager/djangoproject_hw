@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Skystore{% endblock %}</title>
+    {% load static %}
+    <link href="{% static 'catalog/css/bootstrap.min.css' %}" rel="stylesheet">
+    {% block extra_css %}
+    <style>
+        .pagination .page-link {
+            color: #007bff;
+        }
+        .pagination .page-item.active .page-link {
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+        .pagination .page-link:hover {
+            color: #0056b3;
+        }
+    </style>
+{% endblock %}
+</head>
+<body>
+    <!-- Включение меню -->
+    {% include 'catalog/includes/menu.html' %}
+
+    <!-- Основной контент -->
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- Футер -->
+    <footer class="pt-4 my-md-5 pt-md-5 border-top">
+        <div class="container">
+            <div class="row">
+                <div class="col-12 col-md">
+                    SkyStore
+                    <small class="d-block mb-3 text-muted">&copy; {% now "Y" %}</small>
+                </div>
+                <div class="col-6 col-md">
+                    <h5>Категории</h5>
+                    <ul class="list-unstyled text-small">
+                        <li><a class="text-muted" href="#">Рассылки</a></li>
+                        <li><a class="text-muted" href="#">Телеграм боты</a></li>
+                        <li><a class="text-muted" href="#">Полезные утилиты</a></li>
+                        <li><a class="text-muted" href="#">Веб-приложения</a></li>
+                        <li><a class="text-muted" href="#">Микросервисы</a></li>
+                    </ul>
+                </div>
+                <div class="col-6 col-md">
+                    <h5>Дополнительно</h5>
+                    <ul class="list-unstyled text-small">
+                        <li><a class="text-muted" href="#">Мы пишем</a></li>
+                    </ul>
+                </div>
+                <div class="col-6 col-md">
+                    <h5>О нас</h5>
+                    <ul class="list-unstyled text-small">
+                        <li><a class="text-muted" href="/contacts/">Контакты</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="{% static 'catalog/js/bootstrap.bundle.min.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
