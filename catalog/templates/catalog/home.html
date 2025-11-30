@@ -39,7 +39,7 @@
                         </div>
                     {% endif %}
 
-                    <!-- Описание товара (обрезанное до 100 символов) -->
+                    <!-- Описание товара -->
                     <p class="card-text flex-grow-1">
                         {% if product.description %}
                             {{ product.description|truncatechars:100 }}
@@ -51,8 +51,8 @@
                     <!-- Цена и кнопки -->
                     <h3 class="card-title pricing-card-title">{{ product.price }} ₽</h3>
                     <div class="mt-auto">
-                        <a href="/product/{{ product.id }}/" class="btn btn-lg btn-block btn-outline-primary">Подробнее</a>
-                        <button type="button" class="btn btn-lg btn-block btn-outline-success mt-2">Купить</button>
+                        <a href="{% url 'catalog:product_detail' product.id %}" class="btn btn-lg btn-block btn-outline-primary">Подробнее</a>
+                        <button type="button" class="btn btn-lg btn-block btn-outline-success">Купить</button>
                     </div>
                 </div>
             </div>

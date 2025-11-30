@@ -1,0 +1,51 @@
+{% extends 'blog/base.html' %}
+
+{% block title %}{{ post.title }} - Блог Skystore{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'blog:post_list' %}">Блог</a></li>
+                <li class="breadcrumb-item active">{{ post.title }}</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="card">
+    {% if post.preview %}
+        <img src="{{ post.preview.url }}" class="card-img-top" alt="{{ post.title }}" style="max-height: 400px; object-fit: cover;">
+    {% endif %}
+    
+    <div class="card-body">
+        <h1 class="card-title">{{ post.title }}</h1>
+        
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <small class="text-muted">
+                    Опубликовано: {{ post.created_at|date:"d.m.Y H:i" }}
+                </small>
+            </div>
+            <div>
+                <small class="text-muted">
+                    Просмотров: {{ post.views_count }}
+                </small>
+            </div>
+        </div>
+
+        <div class="card-text">
+            {{ post.content|linebreaks }}
+        </div>
+        
+        <div class="mt-4 pt-3 border-top">
+            <div class="btn-group" role="group">
+                <a href="{% url 'blog:post_list' %}" class="btn btn-outline-secondary">← Назад к списку</a>
+                <a href="{% url 'blog:post_edit' post.pk %}" class="btn btn-outline-primary">Редактировать</a>
+                <a href="{% url 'blog:post_delete' post.pk %}" class="btn btn-outline-danger">Удалить</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
