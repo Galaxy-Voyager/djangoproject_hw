@@ -1,51 +1,69 @@
 ﻿from django.core.paginator import Paginator
 from django.shortcuts import render, get_object_or_404, redirect
+from django.views.generic import ListView, DetailView, CreateView, TemplateView
+from django.urls import reverse_lazy
 from .models import Product, Category
 from .forms import ProductForm
 
 
-def home(request):
-    """Контроллер главной страницы с пагинацией"""
-    products_list = Product.objects.all().order_by('-created_at')
+class HomeListView(ListView):
+    """CBV для главной страницы с пагинацией"""
+    model = Product
+    template_name = 'catalog/home.html'
+    context_object_name = 'products'  # ИЗМЕНИТЕ на products
+    paginate_by = 6
+    ordering = ['-created_at']
 
-    # Пагинация - 6 товаров на страницу
-    paginator = Paginator(products_list, 6)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-
-    context = {
-        'page_obj': page_obj,
-        'title': 'Skystore - Главная'
-    }
-    return render(request, 'catalog/home.html', context)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Skystore - Главная'
+        return context
 
 
-def contacts(request):
-    return render(request, 'catalog/contacts.html')
+class ProductDetailView(DetailView):
+    """CBV для детальной страницы товара"""
+    model = Product
+    template_name = 'catalog/product_detail.html'
+    context_object_name = 'product'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = f'{self.object.name} - Skystore'
+        return context
 
 
-def product_detail(request, pk):
-    """Контроллер для отображения детальной страницы товара"""
-    product = get_object_or_404(Product, pk=pk)
-    context = {
-        'product': product,
-        'title': f'{product.name} - Skystore'
-    }
-    return render(request, 'catalog/product_detail.html', context)
+class ProductCreateView(CreateView):
+    """CBV для создания нового товара"""
+    model = Product
+    form_class = ProductForm
+    template_name = 'catalog/product_form.html'
+
+    def get_success_url(self):
+        return reverse_lazy('catalog:product_detail', kwargs={'pk': self.object.pk})
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Добавить товар - Skystore'
+        return context
 
 
-def product_create(request):
-    """Контроллер для создания нового товара"""
-    if request.method == 'POST':
-        form = ProductForm(request.POST, request.FILES)
-        if form.is_valid():
-            product = form.save()
-            return redirect('catalog:product_detail', pk=product.pk)
-    else:
-        form = ProductForm()
+class ContactsTemplateView(TemplateView):
+    """CBV для страницы контактов с обработкой формы"""
+    template_name = 'catalog/contacts.html'
 
-    context = {
-        'form': form,
-        'title': 'Добавить товар - Skystore'
-    }
-    return render(request, 'catalog/product_form.html', context)
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = 'Контакты - Skystore'
+        return context
+
+    def post(self, request, *args, **kwargs):
+        # Логика обработки формы контактов
+        name = request.POST.get('name')
+        phone = request.POST.get('phone')
+        message = request.POST.get('message')
+
+        print(f"Получено сообщение от {name} (тел: {phone}): {message}")
+
+        context = self.get_context_data()
+        context['success_message'] = 'Сообщение успешно отправлено!'
+        return render(request, self.template_name, context)
