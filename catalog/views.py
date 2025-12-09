@@ -1,7 +1,8 @@
 ﻿from django.core.paginator import Paginator
 from django.shortcuts import render, get_object_or_404, redirect
-from django.views.generic import ListView, DetailView, CreateView, TemplateView
+from django.views.generic import ListView, DetailView, CreateView, TemplateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
+from django.contrib.auth.mixins import LoginRequiredMixin
 from .models import Product, Category
 from .forms import ProductForm
 
@@ -67,3 +68,30 @@ class ContactsTemplateView(TemplateView):
         context = self.get_context_data()
         context['success_message'] = 'Сообщение успешно отправлено!'
         return render(request, self.template_name, context)
+
+
+class ProductUpdateView(LoginRequiredMixin, UpdateView):
+    """CBV для редактирования существующего товара"""
+    model = Product
+    form_class = ProductForm
+    template_name = 'catalog/product_form.html'
+
+    def get_success_url(self):
+        return reverse_lazy('catalog:product_detail', kwargs={'pk': self.object.pk})
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = f'Редактирование {self.object.name} - Skystore'
+        return context
+
+
+class ProductDeleteView(LoginRequiredMixin, DeleteView):
+    """CBV для удаления товара"""
+    model = Product
+    template_name = 'catalog/product_confirm_delete.html'
+    success_url = reverse_lazy('catalog:home')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = f'Удаление {self.object.name} - Skystore'
+        return context

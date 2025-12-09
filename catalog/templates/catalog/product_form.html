@@ -8,35 +8,159 @@
         <div class="col-md-8">
             <div class="card">
                 <div class="card-header">
-                    <h2 class="my-0 font-weight-normal text-center">Добавить новый товар</h2>
+                    <h2 class="my-0 font-weight-normal text-center">{{ title }}</h2>
                 </div>
                 <div class="card-body">
-                    <form method="post" enctype="multipart/form-data">
+                    <!-- Отображение общих ошибок формы -->
+                    {% if form.non_field_errors %}
+                    <div class="alert alert-danger">
+                        {% for error in form.non_field_errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <form method="post" enctype="multipart/form-data" novalidate>
                         {% csrf_token %}
 
-                        {% for field in form %}
+                        <!-- Поле: Название товара -->
                         <div class="mb-3">
-                            <label for="{{ field.id_for_label }}" class="form-label">
-                                {{ field.label }}
-                                {% if field.field.required %}
-                                    <span class="text-danger">*</span>
-                                {% endif %}
+                            <label for="{{ form.name.id_for_label }}" class="form-label">
+                                {{ form.name.label }}
+                                <span class="text-danger">*</span>
                             </label>
-                            {{ field }}
-                            {% if field.help_text %}
-                                <div class="form-text">{{ field.help_text }}</div>
+                            {{ form.name }}
+                            {% if form.name.help_text %}
+                                <div class="form-text">{{ form.name.help_text }}</div>
                             {% endif %}
-                            {% if field.errors %}
-                                <div class="alert alert-danger mt-1">
-                                    {{ field.errors }}
+                            {% if form.name.errors %}
+                                <div class="alert alert-danger mt-1 p-2">
+                                    {% for error in form.name.errors %}
+                                        <div class="small">{{ error }}</div>
+                                    {% endfor %}
                                 </div>
                             {% endif %}
                         </div>
-                        {% endfor %}
+
+                        <!-- Поле: Описание -->
+                        <div class="mb-3">
+                            <label for="{{ form.description.id_for_label }}" class="form-label">
+                                {{ form.description.label }}
+                                <span class="text-danger">*</span>
+                            </label>
+                            {{ form.description }}
+                            {% if form.description.help_text %}
+                                <div class="form-text">{{ form.description.help_text }}</div>
+                            {% endif %}
+                            {% if form.description.errors %}
+                                <div class="alert alert-danger mt-1 p-2">
+                                    {% for error in form.description.errors %}
+                                        <div class="small">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Поле: Категория -->
+                        <div class="mb-3">
+                            <label for="{{ form.category.id_for_label }}" class="form-label">
+                                {{ form.category.label }}
+                                <span class="text-danger">*</span>
+                            </label>
+                            {{ form.category }}
+                            {% if form.category.help_text %}
+                                <div class="form-text">{{ form.category.help_text }}</div>
+                            {% endif %}
+                            {% if form.category.errors %}
+                                <div class="alert alert-danger mt-1 p-2">
+                                    {% for error in form.category.errors %}
+                                        <div class="small">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Поле: Цена -->
+                        <div class="mb-3">
+                            <label for="{{ form.price.id_for_label }}" class="form-label">
+                                {{ form.price.label }}
+                                <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                {{ form.price }}
+                                <span class="input-group-text">₽</span>
+                            </div>
+                            {% if form.price.help_text %}
+                                <div class="form-text">{{ form.price.help_text }}</div>
+                            {% endif %}
+                            {% if form.price.errors %}
+                                <div class="alert alert-danger mt-1 p-2">
+                                    {% for error in form.price.errors %}
+                                        <div class="small">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Поле: Изображение -->
+                        <div class="mb-3">
+                            <label for="{{ form.image.id_for_label }}" class="form-label">
+                                {{ form.image.label }}
+                            </label>
+                            {{ form.image }}
+                            {% if form.image.help_text %}
+                                <div class="form-text">{{ form.image.help_text }}</div>
+                            {% endif %}
+                            {% if form.image.errors %}
+                                <div class="alert alert-danger mt-1 p-2">
+                                    {% for error in form.image.errors %}
+                                        <div class="small">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+
+                            <!-- Предпросмотр изображения (для редактирования) -->
+                            {% if form.instance.pk and form.instance.image %}
+                            <div class="mt-3">
+                                <p class="form-text">Текущее изображение:</p>
+                                <img src="{{ form.instance.image.url }}"
+                                     class="img-thumbnail"
+                                     alt="Текущее изображение"
+                                     style="max-height: 150px;">
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Список запрещенных слов (информация для пользователя) -->
+                        <div class="alert alert-info">
+                            <h6 class="alert-heading">Обратите внимание:</h6>
+                            <p class="mb-1">В названии и описании запрещено использовать следующие слова:</p>
+                            <ul class="mb-0 small">
+                                <li>казино</li>
+                                <li>криптовалюта</li>
+                                <li>крипта</li>
+                                <li>биржа</li>
+                                <li>дешево</li>
+                                <li>бесплатно</li>
+                                <li>обман</li>
+                                <li>полиция</li>
+                                <li>радар</li>
+                            </ul>
+                        </div>
 
                         <div class="d-grid gap-2">
-                            <button type="submit" class="btn btn-lg btn-primary">Добавить товар</button>
-                            <a href="/" class="btn btn-lg btn-outline-secondary">Отмена</a>
+                            <button type="submit" class="btn btn-lg btn-primary">
+                                {% if form.instance.pk %}
+                                    Сохранить изменения
+                                {% else %}
+                                    Добавить товар
+                                {% endif %}
+                            </button>
+                            {% if form.instance.pk %}
+                                <a href="{% url 'catalog:product_detail' form.instance.pk %}" class="btn btn-lg btn-outline-secondary">Отмена</a>
+                            {% else %}
+                                <a href="{% url 'catalog:home' %}" class="btn btn-lg btn-outline-secondary">Отмена</a>
+                            {% endif %}
                         </div>
                     </form>
                 </div>
@@ -44,4 +168,47 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Автофокус на первом поле
+    const firstInput = document.querySelector('form input:not([type="hidden"]), form textarea, form select');
+    if (firstInput) firstInput.focus();
+
+    // Валидация на стороне клиента для цены
+    const priceInput = document.getElementById('{{ form.price.id_for_label }}');
+    if (priceInput) {
+        priceInput.addEventListener('change', function() {
+            const value = parseFloat(this.value);
+            if (value < 0) {
+                this.classList.add('is-invalid');
+            } else {
+                this.classList.remove('is-invalid');
+            }
+        });
+    }
+
+    // Предупреждение при вводе запрещенных слов
+    const nameInput = document.getElementById('{{ form.name.id_for_label }}');
+    const descInput = document.getElementById('{{ form.description.id_for_label }}');
+
+    const forbiddenWords = ['казино', 'криптовалюта', 'крипта', 'биржа', 'дешево', 'бесплатно', 'обман', 'полиция', 'радар'];
+
+    function checkForbiddenWords(input) {
+        const value = input.value.toLowerCase();
+        for (const word of forbiddenWords) {
+            if (value.includes(word)) {
+                input.classList.add('is-invalid');
+                return;
+            }
+        }
+        input.classList.remove('is-invalid');
+    }
+
+    if (nameInput) nameInput.addEventListener('input', () => checkForbiddenWords(nameInput));
+    if (descInput) descInput.addEventListener('input', () => checkForbiddenWords(descInput));
+});
+</script>
 {% endblock %}
