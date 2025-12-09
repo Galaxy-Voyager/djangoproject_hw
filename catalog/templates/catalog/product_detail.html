@@ -35,25 +35,33 @@
                 </div>
                 <div class="card-body">
                     <h3 class="card-title pricing-card-title">{{ product.price }} ₽</h3>
-                    
+
                     <div class="mb-3">
                         <strong>Категория:</strong> {{ product.category.name }}
                     </div>
-                    
+
                     <div class="mb-3">
                         <strong>Описание:</strong>
                         <p>{{ product.description|linebreaks }}</p>
                     </div>
-                    
+
                     <div class="mb-3">
                         <strong>Дата создания:</strong> {{ product.created_at|date:"d.m.Y H:i" }}
                     </div>
-                    
+
                     <div class="mb-3">
                         <strong>Последнее обновление:</strong> {{ product.updated_at|date:"d.m.Y H:i" }}
                     </div>
-                    
-                    <button type="button" class="btn btn-lg btn-block btn-outline-primary">Купить</button>
+
+                    <!-- Кнопки действий -->
+                    <div class="btn-group w-100 mb-3" role="group">
+                        <button type="button" class="btn btn-lg btn-outline-primary">Купить</button>
+                        {% if user.is_authenticated %}
+                            <a href="{% url 'catalog:product_edit' product.pk %}" class="btn btn-lg btn-outline-warning">Редактировать</a>
+                            <a href="{% url 'catalog:product_delete' product.pk %}" class="btn btn-lg btn-outline-danger">Удалить</a>
+                        {% endif %}
+                    </div>
+
                     <a href="{% url 'catalog:home' %}" class="btn btn-lg btn-block btn-outline-secondary">Назад в каталог</a>
                 </div>
             </div>
