@@ -11,7 +11,7 @@ class HomeListView(ListView):
     """CBV для главной страницы с пагинацией"""
     model = Product
     template_name = 'catalog/home.html'
-    context_object_name = 'products'  # ИЗМЕНИТЕ на products
+    context_object_name = 'products'
     paginate_by = 6
     ordering = ['-created_at']
 
@@ -33,7 +33,7 @@ class ProductDetailView(DetailView):
         return context
 
 
-class ProductCreateView(CreateView):
+class ProductCreateView(LoginRequiredMixin, CreateView):
     """CBV для создания нового товара"""
     model = Product
     form_class = ProductForm
@@ -58,7 +58,6 @@ class ContactsTemplateView(TemplateView):
         return context
 
     def post(self, request, *args, **kwargs):
-        # Логика обработки формы контактов
         name = request.POST.get('name')
         phone = request.POST.get('phone')
         message = request.POST.get('message')
