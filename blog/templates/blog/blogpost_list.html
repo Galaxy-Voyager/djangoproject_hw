@@ -6,7 +6,11 @@
 <div class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
     <h1 class="display-4">Наш блог</h1>
     <p class="lead">Полезные статьи и новости от команды Skystore</p>
-    <a href="{% url 'blog:post_create' %}" class="btn btn-success">Написать статью</a>
+    {% if user.is_authenticated %}
+        <a href="{% url 'blog:post_create' %}" class="btn btn-success">Написать статью</a>
+    {% else %}
+        <a href="{% url 'users:login' %}" class="btn btn-outline-success">Войдите, чтобы написать статью</a>
+    {% endif %}
 </div>
 
 <div class="row">
@@ -43,7 +47,11 @@
         <div class="alert alert-info text-center">
             <h4>Статьи не найдены</h4>
             <p>В блоге пока нет опубликованных статей.</p>
-            <a href="{% url 'blog:post_create' %}" class="btn btn-primary">Написать первую статью</a>
+            {% if user.is_authenticated %}
+                <a href="{% url 'blog:post_create' %}" class="btn btn-primary">Написать первую статью</a>
+            {% else %}
+                <a href="{% url 'users:login' %}" class="btn btn-outline-primary">Войдите, чтобы написать статью</a>
+            {% endif %}
         </div>
     </div>
     {% endfor %}

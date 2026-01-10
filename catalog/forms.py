@@ -46,7 +46,10 @@ class ProductForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
+        # Получаем текущего пользователя из kwargs
+        self.user = kwargs.pop('user', None)
         super().__init__(*args, **kwargs)
+
         # Дополнительная стилизация
         for field_name, field in self.fields.items():
             if field_name == 'category':
@@ -124,3 +127,15 @@ class ProductForm(forms.ModelForm):
                 )
 
         return image
+
+    def save(self, commit=True):
+        """Переопределяем сохранение для автоматического назначения владельца"""
+        instance = super().save(commit=False)
+
+        if not instance.pk and self.user:
+            instance.owner = self.user
+
+        if commit:
+            instance.save()
+
+        return instance

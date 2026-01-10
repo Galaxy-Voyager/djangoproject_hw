@@ -2,7 +2,8 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.views.generic import ListView, DetailView, CreateView, TemplateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin, UserPassesTestMixin
+from django.core.exceptions import PermissionDenied
 from .models import Product, Category
 from .forms import ProductForm
 
@@ -38,6 +39,12 @@ class ProductCreateView(LoginRequiredMixin, CreateView):
     model = Product
     form_class = ProductForm
     template_name = 'catalog/product_form.html'
+
+    def get_form_kwargs(self):
+        """Передаем пользователя в форму"""
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
 
     def get_success_url(self):
         return reverse_lazy('catalog:product_detail', kwargs={'pk': self.object.pk})
@@ -75,6 +82,24 @@ class ProductUpdateView(LoginRequiredMixin, UpdateView):
     form_class = ProductForm
     template_name = 'catalog/product_form.html'
 
+    def test_func(self):
+        """Проверка прав на редактирование"""
+        product = self.get_object()
+        user = self.request.user
+
+        # Владелец может редактировать
+        if product.owner == user:
+            return True
+
+        # Модератор продуктов может редактировать
+        if user.has_perm('catalog.change_product'):
+            return True
+
+        return False
+
+    def handle_no_permission(self):
+        raise PermissionDenied("У вас нет прав для редактирования этого продукта")
+
     def get_success_url(self):
         return reverse_lazy('catalog:product_detail', kwargs={'pk': self.object.pk})
 
@@ -84,13 +109,48 @@ class ProductUpdateView(LoginRequiredMixin, UpdateView):
         return context
 
 
-class ProductDeleteView(LoginRequiredMixin, DeleteView):
+class ProductDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     """CBV для удаления товара"""
     model = Product
     template_name = 'catalog/product_confirm_delete.html'
     success_url = reverse_lazy('catalog:home')
 
+    def test_func(self):
+        """Проверка прав на удаление"""
+        product = self.get_object()
+        user = self.request.user
+
+        # Владелец может удалять
+        if product.owner == user:
+            return True
+
+        # Модератор продуктов может удалять (у него есть право delete_product)
+        if user.has_perm('catalog.delete_product'):
+            return True
+
+        return False
+
+    def handle_no_permission(self):
+        raise PermissionDenied("У вас нет прав для удаления этого продукта")
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = f'Удаление {self.object.name} - Skystore'
         return context
+
+
+class ProductUnpublishView(LoginRequiredMixin, PermissionRequiredMixin, UpdateView):
+    """CBV для отмены публикации товара"""
+    model = Product
+    fields = ['is_published']
+    template_name = 'catalog/product_unpublish.html'
+    permission_required = 'catalog.can_unpublish_product'
+
+    def form_valid(self, form):
+        """Отменяем публикацию"""
+        form.instance.is_published = False
+        form.instance.publish_status = 'rejected'
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse_lazy('catalog:product_detail', kwargs={'pk': self.object.pk})
