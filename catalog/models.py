@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import models
 
 
@@ -51,10 +52,39 @@ class Product(models.Model):
         auto_now=True,
         verbose_name='Дата последнего изменения'
     )
+    owner = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        verbose_name='Владелец',
+        blank=True,
+        null=True
+    )
+
+    PUBLISH_STATUS_CHOICES = [
+        ('draft', 'Черновик'),
+        ('pending', 'На модерации'),
+        ('published', 'Опубликовано'),
+        ('rejected', 'Отклонено'),
+    ]
+
+    publish_status = models.CharField(
+        max_length=20,
+        choices=PUBLISH_STATUS_CHOICES,
+        default='draft',
+        verbose_name='Статус публикации'
+    )
+
+    is_published = models.BooleanField(
+        default=False,
+        verbose_name='Опубликован'
+    )
 
     class Meta:
         verbose_name = 'Продукт'
         verbose_name_plural = 'Продукты'
+        permissions = [
+            ('can_unpublish_product', 'Может отменять публикацию продукта'),
+        ]
 
     def __str__(self):
         return self.name

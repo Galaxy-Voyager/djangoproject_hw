@@ -18,6 +18,17 @@
                 </h2>
             </div>
             <div class="card-body">
+                {% if user.is_authenticated and not perms.blog.can_manage_blog and not user.groups.all.0.name == "Контент-менеджер" %}
+                <div class="alert alert-info mb-4">
+                    <i class="bi bi-info-circle"></i>
+                    <strong>Обратите внимание:</strong>
+                    Ваша статья будет отправлена на модерацию.
+                    Контент-менеджер проверит её перед публикацией.
+                    {% if not form.instance.pk %}
+                        Поле "Опубликовано" скрыто для вас.
+                    {% endif %}
+                </div>
+                {% endif %}
                 <form method="post" enctype="multipart/form-data">
                     {% csrf_token %}
                     

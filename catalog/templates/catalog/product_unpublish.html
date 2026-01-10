@@ -1,0 +1,42 @@
+{% extends 'catalog/base.html' %}
+
+{% block title %}Отменить публикацию - {{ product.name }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-warning">
+                    <h2 class="my-0 font-weight-normal text-center">Отменить публикацию</h2>
+                </div>
+                <div class="card-body">
+                    <p class="text-center">
+                        Вы уверены, что хотите отменить публикацию товара?
+                    </p>
+
+                    <div class="alert alert-info">
+                        <h5>{{ product.name }}</h5>
+                        <p><strong>Цена:</strong> {{ product.price }} ₽</p>
+                        <p><strong>Категория:</strong> {{ product.category.name }}</p>
+                        <p><strong>Владелец:</strong> {{ product.owner.email|default:"Не указан" }}</p>
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-lg btn-warning">
+                                Да, отменить публикацию
+                            </button>
+                            <a href="{% url 'catalog:product_detail' product.pk %}"
+                               class="btn btn-lg btn-outline-secondary">
+                                Нет, вернуться назад
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
