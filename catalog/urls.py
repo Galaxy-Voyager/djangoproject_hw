@@ -5,7 +5,9 @@ from .views import (
     ProductCreateView,
     ProductUpdateView,
     ProductDeleteView,
-    ContactsTemplateView
+    ContactsTemplateView,
+    ProductUnpublishView,
+    CategoryProductsView
 )
 from . import views
 
@@ -27,4 +29,7 @@ urlpatterns = [
     path('product/<int:pk>/unpublish/',
          views.ProductUnpublishView.as_view(),
          name='product_unpublish'),
+    path('category/<int:category_id>/products/',
+         CategoryProductsView.as_view(),
+         name='category_products'),
 ]

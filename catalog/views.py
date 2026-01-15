@@ -6,20 +6,89 @@ from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMix
 from django.core.exceptions import PermissionDenied
 from .models import Product, Category
 from .forms import ProductForm
+from django.views.decorators.cache import cache_page
+from django.utils.decorators import method_decorator
+from django.core.cache import cache
+from django.db.models import Q
+from .services import ProductService, get_cached_categories
+import time
 
 
 class HomeListView(ListView):
-    """CBV для главной страницы с пагинацией"""
+    """CBV для главной страницы с пагинацией и кешированием"""
     model = Product
     template_name = 'catalog/home.html'
     context_object_name = 'products'
     paginate_by = 6
     ordering = ['-created_at']
 
+    # Время кеширования (в секундах)
+    cache_timeout = 60 * 10  # 10 минут
+
+    def get_queryset(self):
+        """Получаем кешированный QuerySet продуктов"""
+        cache_key = 'home_products_list'
+
+        # Пытаемся получить из кеша
+        cached_queryset = cache.get(cache_key)
+
+        if cached_queryset is not None:
+            print("Список продуктов получен из кеша")
+            return cached_queryset
+
+        # Если нет в кеше - выполняем запрос
+        queryset = Product.objects.filter(
+            is_published=True,
+            publish_status='published'
+        ).select_related('category', 'owner').order_by(*self.ordering)
+
+        # Сохраняем в кеш
+        cache.set(cache_key, queryset, self.cache_timeout)
+        print("Список продуктов закеширован")
+
+        return queryset
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Skystore - Главная'
+        context['cache_timeout'] = self.cache_timeout
+        context['cache_info'] = {
+            'cached_at': time.time(),
+            'products_count': self.get_queryset().count()
+        }
+
+        # Получаем кешированные категории
+        from .services import get_cached_categories
+        context['categories'] = get_cached_categories()
+
+        # Статистика кеша (для отладки)
+        if self.request.user.is_staff:
+            context['cache_stats'] = self.get_cache_stats()
+
         return context
+
+    def get_cache_stats(self):
+        """Статистика кеша (только для администраторов)"""
+        cache_stats = {}
+
+        # Проверяем кеш главной страницы
+        cache_key = 'home_products_list'
+        ttl = cache.ttl(cache_key)
+
+        if ttl:
+            cache_stats['home_cache'] = dict(ttl=ttl, ttl_minutes=ttl // 60, is_active=True)
+        else:
+            cache_stats['home_cache'] = {'is_active': False}
+
+        # Проверяем кеш Redis
+        try:
+            from django_redis import get_redis_connection
+            redis_conn = get_redis_connection("default")
+            cache_stats['redis_info'] = redis_conn.info()
+        except Exception as e:
+            cache_stats['redis_error'] = str(e)
+
+        return cache_stats
 
 
 class ProductDetailView(DetailView):
@@ -28,9 +97,42 @@ class ProductDetailView(DetailView):
     template_name = 'catalog/product_detail.html'
     context_object_name = 'product'
 
+    # Время кеширования в секундах (5 минут)
+    cache_timeout = 60 * 5
+
+    def get_object(self, queryset=None):
+        """Получаем объект с кешированием"""
+        cache_key = f'product_detail_{self.kwargs.get("pk")}'
+        product = cache.get(cache_key)
+
+        if not product:
+            product = super().get_object(queryset)
+            # Кешируем на указанное время
+            cache.set(cache_key, product, self.cache_timeout)
+            print(f"Продукт {product.name} закеширован на {self.cache_timeout} секунд")
+
+        return product
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = f'{self.object.name} - Skystore'
+        context['cache_timeout'] = self.cache_timeout
+        context['cached_at'] = time.time()
+        return context
+
+
+# Альтернативный способ с декоратором (можно использовать вместо get_object)
+@method_decorator(cache_page(60 * 5), name='dispatch')
+class ProductDetailViewCached(DetailView):
+    """Версия с декоратором кеширования всей страницы"""
+    model = Product
+    template_name = 'catalog/product_detail.html'
+    context_object_name = 'product'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = f'{self.object.name} - Skystore'
+        context['page_cached'] = True
         return context
 
 
@@ -154,3 +256,32 @@ class ProductUnpublishView(LoginRequiredMixin, PermissionRequiredMixin, UpdateVi
 
     def get_success_url(self):
         return reverse_lazy('catalog:product_detail', kwargs={'pk': self.object.pk})
+
+
+class CategoryProductsView(ListView):
+    """CBV для отображения продуктов в категории"""
+    template_name = 'catalog/category_products.html'
+    context_object_name = 'products'
+    paginate_by = 12
+
+    def get_queryset(self):
+        """Получаем продукты категории через сервис"""
+        category_id = self.kwargs['category_id']
+        return ProductService.get_products_in_category(category_id)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        category_id = self.kwargs['category_id']
+
+        # Получаем информацию о категории
+        category_data = ProductService.get_category_with_product_count(category_id)
+
+        context.update(category_data)
+        context['title'] = f'{context["category"].name} - Skystore'
+        context['category_id'] = category_id
+        context['cache_info'] = {
+            'timestamp': category_data.get('timestamp'),
+            'current_time': time.time()
+        }
+
+        return context
