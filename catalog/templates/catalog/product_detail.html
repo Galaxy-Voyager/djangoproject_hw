@@ -4,6 +4,18 @@
 
 {% block content %}
 <div class="container">
+    <!-- Информация о кешировании (только для отладки) -->
+    {% if user.is_staff %}
+    <div class="alert alert-info alert-dismissible fade show" role="alert">
+        <i class="bi bi-info-circle"></i>
+        Страница закеширована на {{ cache_timeout|default:300 }} секунд
+        {% if cached_at %}
+            | Время генерации: {{ cached_at|date:"H:i:s" }}
+        {% endif %}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endif %}
+
     <div class="row">
         <div class="col-12">
             <nav aria-label="breadcrumb">

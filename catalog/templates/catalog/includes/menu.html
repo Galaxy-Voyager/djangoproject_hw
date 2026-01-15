@@ -1,79 +1,85 @@
-﻿<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
-    <div class="container">
-        <a class="navbar-brand" href="{% url 'catalog:home' %}">
-            <i class="bi bi-shop"></i> Skystore
-        </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        
-        <div class="collapse navbar-collapse" id="navbarContent">
-            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'catalog:home' %}">
-                        <i class="bi bi-house"></i> Главная
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'blog:post_list' %}">
-                        <i class="bi bi-journal-text"></i> Блог
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'catalog:contacts' %}">
-                        <i class="bi bi-telephone"></i> Контакты
-                    </a>
-                </li>
+﻿{% load cache %}
 
-                {% if user.is_authenticated %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'catalog:product_create' %}">
-                        <i class="bi bi-plus-circle"></i> Добавить товар
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'blog:post_create' %}">
-                        <i class="bi bi-file-earmark-plus"></i> Добавить статью
-                    </a>
-                </li>
-                {% endif %}
-            </ul>
+<!-- Кешируем меню на 1 час для анонимных пользователей -->
+{% if not user.is_authenticated %}
+    {% cache 3600 menu_header %}
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'catalog:home' %}">
+                <i class="bi bi-shop"></i> Skystore
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+                <span class="navbar-toggler-icon"></span>
+            </button>
 
-            <!-- Правая часть меню -->
-            <div class="d-flex">
-                {% if user.is_authenticated %}
-                <div class="dropdown">
-                    <button class="btn btn-outline-light dropdown-toggle" type="button"
-                            data-bs-toggle="dropdown" aria-expanded="false">
-                        <i class="bi bi-person-circle"></i>
-                        {% if user.first_name %}
-                            {{ user.first_name }}
-                        {% else %}
-                            {{ user.email }}
-                        {% endif %}
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li>
-                            <form method="post" action="{% url 'users:logout' %}" class="d-inline">
-                                {% csrf_token %}
-                                <button type="submit" class="dropdown-item">
-                                    <i class="bi bi-box-arrow-right"></i> Выйти
-                                </button>
-                            </form>
-                        </li>
-                    </ul>
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'catalog:home' %}">
+                            <i class="bi bi-house"></i> Главная
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'blog:post_list' %}">
+                            <i class="bi bi-journal-text"></i> Блог
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'catalog:contacts' %}">
+                            <i class="bi bi-telephone"></i> Контакты
+                        </a>
+                    </li>
+
+                    {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'catalog:product_create' %}">
+                            <i class="bi bi-plus-circle"></i> Добавить товар
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'blog:post_create' %}">
+                            <i class="bi bi-file-earmark-plus"></i> Добавить статью
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+
+                <!-- Правая часть меню -->
+                <div class="d-flex">
+                    {% if user.is_authenticated %}
+                    <div class="dropdown">
+                        <button class="btn btn-outline-light dropdown-toggle" type="button"
+                                data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-circle"></i>
+                            {% if user.first_name %}
+                                {{ user.first_name }}
+                            {% else %}
+                                {{ user.email }}
+                            {% endif %}
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <form method="post" action="{% url 'users:logout' %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="dropdown-item">
+                                        <i class="bi bi-box-arrow-right"></i> Выйти
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                    {% else %}
+                    <div class="btn-group" role="group">
+                        <a href="{% url 'users:login' %}" class="btn btn-outline-light me-2">
+                            <i class="bi bi-box-arrow-in-right"></i> Войти
+                        </a>
+                        <a href="{% url 'users:register' %}" class="btn btn-primary">
+                            <i class="bi bi-person-plus"></i> Регистрация
+                        </a>
+                    </div>
+                    {% endif %}
                 </div>
-                {% else %}
-                <div class="btn-group" role="group">
-                    <a href="{% url 'users:login' %}" class="btn btn-outline-light me-2">
-                        <i class="bi bi-box-arrow-in-right"></i> Войти
-                    </a>
-                    <a href="{% url 'users:register' %}" class="btn btn-primary">
-                        <i class="bi bi-person-plus"></i> Регистрация
-                    </a>
-                </div>
-                {% endif %}
             </div>
         </div>
-    </div>
-</nav>
+    </nav>
+{% endif %}
